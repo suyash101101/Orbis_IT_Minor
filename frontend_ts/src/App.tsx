@@ -1,10 +1,16 @@
 import { useEffect } from "react";
-import { Dashboard } from "./components/Dashboard";
-import { Navbar } from "./components/Navbar";
+import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
 import { Sidebar } from "./components/Sidebar";
-import { TabsNav } from "./components/Navbar";
+import { AuthWrapper } from "./components/AuthProvider";
+import Home from "./components/Home";
+import Profile from "./components/Profile";
+import CreateLinkHub from "./components/CreateLinkHub";
+import SignIn from "./components/SignIn";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "./components/ui/toaster";
+import EditProfile from "./components/EditProfile";
 
-function App() {
+function MainLayout() {
   // Initialize theme based on localStorage or user preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
@@ -23,15 +29,46 @@ function App() {
     <div className="min-h-screen bg-background text-foreground flex">
       <Sidebar />
       <div className="flex flex-col flex-1">
-        <Navbar />
-        <TabsNav />
         <main className="flex-1 overflow-auto">
-          <Dashboard />
+          <Outlet />
         </main>
       </div>
     </div>
   );
 }
 
-export default App
+function App() {
+  return (
+    <AuthWrapper>
+      <Router>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Home />} />
+            <Route path="/profile/:username" element={<Profile />} />
+            <Route 
+              path="/edit-profile/:username" 
+              element={
+                <ProtectedRoute>
+                  <EditProfile />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/create-linkhub" 
+              element={
+                <ProtectedRoute>
+                  <CreateLinkHub />
+                </ProtectedRoute>
+              } 
+            />
+          </Route>
+          <Route path="/sign-in/*" element={<SignIn />} />
+        </Routes>
+        <Toaster />
+      </Router>
+    </AuthWrapper>
+  );
+}
+
+export default App;
 
